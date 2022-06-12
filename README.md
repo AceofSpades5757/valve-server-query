@@ -2,7 +2,7 @@
 
 # Description
 
-This package allows you to access the data provided by Valve's _Server Query_ and _Master Server Query_ (NOT SUPPORTED) protocols.
+This package allows you to access the data provided by Valve's _Server Query_ protocol.
 
 - BLAZINGLY FAST
 - TYPE SAFE
