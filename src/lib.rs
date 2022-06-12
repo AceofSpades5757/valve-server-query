@@ -11,33 +11,6 @@
 //! let players: Vec<Player> = client.players().expects("Failed to get server players.");
 //! let rules = client.rules().expects("Failed to get server rules.");
 //! ```
-//!
-//! # Game Server Rules
-//!
-//! # Game Server Players
-//!
-//!
-//! SUCCESS
-//!
-//! Successfully make a call to a server, given the ip and query port using the A2S_INFO protocol.
-//!
-//! Matched it up using `steam-server-query` npm package.
-//!
-//! TODO: Add support for multi-packet responses.
-//!     * See this section <https://developer.valvesoftware.com/wiki/Server_queries#Protocol>
-//!     * The header will be different depending on if it matches the Simple Response Format, or
-//!     the Multi-packet Response format.
-//! TODO: Add A2S_INFO tests.
-//! TODO: Add A2S_INFO logging.
-//! TODO: Add A2S_PLAYER function & model.
-//! TODO: Add A2S_RULES function & model.
-//! TODO: Add A2S_SERVERQUERY_GETCHALLENGE function & model.
-//!
-//! TODO: Add keywords: e.g. (from npm package) steam, master server query, game server query
-//!
-//! TODO: Add Master Server Query support, as it looks like it should have this.
-
-// use log;
 
 pub mod constants {
     const ENCODING: &str = "utf-8";
@@ -153,10 +126,9 @@ pub mod types {
 
 pub mod models {
 
-    use crate::types::{Byte, Long, Float, get_byte, get_float, get_long, get_string};
+    use crate::types::{get_byte, get_float, get_long, get_string, Byte, Float, Long};
 
-    #[derive(Debug)]
-    #[derive(PartialEq)]
+    #[derive(Debug, PartialEq)]
     pub struct Player {
         index: Byte,
         name: String,
@@ -176,25 +148,19 @@ pub mod models {
     }
 
     impl Player {
-        // TODO: Create PlayerList { player_count: Byte, players: Vec<Player> } and make this
-        // from_bytes.
         pub fn get_players(bytes: &[u8]) -> Vec<Self> {
-
             let mut it = bytes.iter();
             let mut players: Vec<Self> = Vec::new();
 
-            while it.len() > (
-                // There's a String to, but that has a varialble size.
-                std::mem::size_of::<Byte>()
-                + std::mem::size_of::<Long>()
-                + std::mem::size_of::<Float>()
-            ) {
+            while it.len()
+                > (
+                    // There's a String to, but that has a varialble size.
+                    std::mem::size_of::<Byte>()
+                        + std::mem::size_of::<Long>()
+                        + std::mem::size_of::<Float>()
+                )
+            {
                 let player = Self::from_iter_bytes(&mut it);
-
-                // Empty Player
-                //if player == Self::default() {
-                    //break;
-                //}
 
                 players.push(player);
             }
@@ -206,7 +172,6 @@ pub mod models {
         where
             I: Iterator<Item = &'a u8>,
         {
-
             let index = get_byte(iter_bytes);
             let name = get_string(iter_bytes);
             let score = get_long(iter_bytes);
@@ -221,7 +186,6 @@ pub mod models {
         }
 
         pub fn from_bytes(bytes: &[u8]) -> Self {
-
             let mut it = bytes.iter();
 
             let index = get_byte(&mut it);
@@ -271,23 +235,19 @@ pub mod models {
             // 'd' for a dedicated server
             // 'l' for a non-dedicated server
             // 'p' for a SourceTV relay (proxy)
-            //server_type: Byte,
             server_type: ServerType,
             // Indicates the operating system of the server:
             // 'l' for Linux
             // 'w' for Windows
             // 'm' or 'o' for Mac (the code changed after L4D1)
-            //environment: Byte,
             environment: Environment,
             // Indicates whether the server requires a password:
             // 0 for public
             // 1 for private
-            //visibility: Byte,
             visibility: Visibility,
             // Specifies whether the server uses VAC:
             // 0 for unsecured
             // 1 for secured
-            //vac: Byte,
             vac: Vac,
             // Version of the game installed on the server.
             game_version: String,
@@ -312,8 +272,6 @@ pub mod models {
         }
 
         impl Info {
-            // TODO: This should return a result, not just Self
-            //  Or, we could do Self.try_from_bytes
             pub fn from_bytes(bytes: &[u8]) -> Self {
                 use crate::types::get_byte;
                 use crate::types::get_longlong;
@@ -321,7 +279,6 @@ pub mod models {
                 use crate::types::get_string;
                 use crate::utils::compress_trailing_null_bytes;
 
-                //let mut v: Vec<Byte> = bytes.to_vec().into_iter().rev().collect();
                 let mut it = bytes.iter();
 
                 let header = get_byte(&mut it);
@@ -526,88 +483,20 @@ pub mod models {
             fn test_vac_from_byte() {
                 assert_eq!(Vac::Secured, Vac::from_byte(&(0x01)));
             }
-
-            #[test]
-            #[ignore]
-            fn test_gameinfo_from_bytes() {
-                // FIXME: This fails for unknown reasons.
-                // Example response for Rag Doll Kung Fu:
-                let response = [
-                    0xFF, 0xFF, 0xFF, 0xFF, 0x49, 0xFC, 0x54, 0x68, 0x65, 0x20, 0x44, 0x75, 0x64, 0x65,
-                    0x27, 0x73, 0x20, 0x64, 0x6F, 0x6A, 0x6F, 0x00, 0x53, 0x6F, 0x63, 0x63, 0x65, 0x72,
-                    0x00, 0x52, 0x44, 0x4B, 0x46, 0x53, 0x6F, 0x63, 0x63, 0x65, 0x72, 0x00, 0x52, 0x61,
-                    0x67, 0x44, 0x6F, 0x6C, 0x6C, 0x4B, 0x75, 0x6E, 0x67, 0x46, 0x75, 0x3A, 0x20, 0x53,
-                    0x6F, 0x63, 0x63, 0x65, 0x72, 0x00, 0xEA, 0x03, 0x01, 0x04, 0x00, 0x00, 0x77, 0x00,
-                    0x00, 0x32, 0x2E, 0x33, 0x2E, 0x30, 0x2E, 0x30, 0x00,
-                ];
-
-                let _packet_header = &response[..4];
-                let payload = response[4..].to_vec();
-
-                let info = Info::from_bytes(&payload);
-            }
         }
     }
 }
 
-/* NPM Library
-{
-  protocol: 17,
-  name: 'RadLads (PvP)',
-  map: 'VRisingWorld',
-  folder: 'V Rising',
-  game: '0a905c8f-81ef-4adb-909b-cf4d3513d001',
-  appId: 0,
-  players: 0,
-  maxPlayers: 40,
-  bots: 0,
-  serverType: 'd',
-  environment: 'w',
-  visibility: 1,
-  vac: 1,
-  version: '0.0.0.1',
-  port: 9878,
-  keywords: 'pvp,cs4,ded,std',
-  gameId: 1604030n
-}
-*/
-
-/*
-&info = Info {
-    // GOOD
-    header: 73,
-    // GOOD
-    protocol: 17,  // Version number
-    // GOOD
-    name: "RadLads (PvP)",
-    // GOOD
-    map: "VRisingWorld",
-    // BAD: This is the game's name
-    folder: "V Rising",
-    game: "0a905c8f-81ef-4adb-909b-cf4d3513d001",
-    // Game: 1604030
-    // Game: 1829350
-    id: 0,
-    players: 0,
-    max_players: 40,
-    bots: 0,
-    server_type: 100,
-    environment: 119,
-    visibility: 1,
-    vac: 1,
-}
-*/
-
 pub mod client {
 
+    use std::collections::HashMap;
     use std::error::Error;
     use std::io;
     use std::net::SocketAddr;
     use std::net::{IpAddr, Ipv4Addr, UdpSocket};
-    use std::collections::HashMap;
 
-    use crate::models::Player;
     use crate::models::info::Info;
+    use crate::models::Player;
 
     type Rules = HashMap<String, String>;
 
@@ -623,8 +512,6 @@ pub mod client {
             let socket: UdpSocket;
 
             // Handle Errors
-            //
-            // TODO: This is _really_ ugly.
             let result: Result<SocketAddr, _> = url.parse();
             if let Ok(a) = result {
                 addr = a;
@@ -691,14 +578,13 @@ pub mod client {
             let packet_header = &buffer[..4];
             let payload: Vec<u8>;
             if packet_header == crate::constants::SIMPLE_RESPONSE_HEADER {
-                payload = buffer[4..bytes_returned+1].to_vec();
+                payload = buffer[4..bytes_returned + 1].to_vec();
             } else if packet_header == crate::constants::MULTI_PACKET_RESPONSE_HEADER {
                 todo!("Mutli Packet Response");
             } else {
                 panic!("An unknown packet header was received.");
             }
 
-            //let info = Info::from_bytes(&buffer[4..]);
             let info = Info::from_bytes(&payload);
             Ok(info)
         }
@@ -707,7 +593,6 @@ pub mod client {
     // A2S_PLAYER Implementation
     impl Client {
         pub fn players(&self) -> Result<Vec<Player>, io::Error> {
-
             use crate::types::Byte;
 
             let request = [
@@ -761,7 +646,7 @@ pub mod client {
             let _header: &Byte = &payload[0];
             let _player_count: Byte = buffer[1].clone();
 
-            let players: Vec<Player> = Player::get_players(&buffer[2..bytes_returned+1]);
+            let players: Vec<Player> = Player::get_players(&buffer[2..bytes_returned + 1]);
 
             Ok(players)
         }
@@ -769,10 +654,7 @@ pub mod client {
 
     // A2S_RULES Implementation
     impl Client {
-        // TODO: Rules shouldn't be a hashmap since rules names could possibly have the same name.
-        // FIXME: This isn't giving the right information back.
         pub fn rules(&self) -> Result<Rules, io::Error> {
-
             use crate::types::Byte;
             use crate::utils::compress_trailing_null_bytes;
 
@@ -818,7 +700,7 @@ pub mod client {
             let mut payload: Vec<u8>;
             if packet_header == crate::constants::SIMPLE_RESPONSE_HEADER {
                 let _rule_count: Byte = buffer[5].clone();
-                let _ = buffer[6];  // Null Byte
+                let _ = buffer[6]; // Null Byte
                 payload = buffer[7..].to_vec();
                 compress_trailing_null_bytes(&mut payload);
             } else if packet_header == crate::constants::MULTI_PACKET_RESPONSE_HEADER {
@@ -834,7 +716,6 @@ pub mod client {
         }
 
         pub fn get_rules(bytes: &[u8]) -> Rules {
-
             use crate::types::get_string;
 
             let mut it = bytes.iter();
@@ -842,13 +723,12 @@ pub mod client {
 
             // FIXME: We're getting an error on get_string, where the iterator has been exhausted.
             while it.len() > 0 {
-
                 let name = get_string(&mut it);
                 let value = get_string(&mut it);
 
                 // Empty Rule
                 //if name.len() == 0 && value.len() == 0 {
-                    //break;
+                //break;
                 //}
 
                 rules.insert(name, value);
@@ -919,7 +799,6 @@ pub mod client {
 
 pub mod utils {
     pub fn compress_trailing_null_bytes(bytes: &mut Vec<u8>) {
-
         // No Size
         if bytes.len() == 0 || bytes.len() == 1 {
             return;
@@ -945,7 +824,6 @@ pub mod utils {
 
         #[test]
         fn test_compress_null_bytes_basic() {
-
             let mut bytes: Vec<u8> = vec![1, 2, 3, 0, 0, 0, 0];
             compress_trailing_null_bytes(&mut bytes);
 
@@ -953,11 +831,9 @@ pub mod utils {
             let expected: Vec<u8> = vec![1, 2, 3, 0];
 
             assert_eq!(result, expected);
-
         }
         #[test]
         fn test_compress_null_bytes_with_no_trailing_zeroes() {
-
             let mut bytes: Vec<u8> = vec![1, 2, 3];
             compress_trailing_null_bytes(&mut bytes);
 
@@ -965,11 +841,9 @@ pub mod utils {
             let expected: Vec<u8> = vec![1, 2, 3];
 
             assert_eq!(result, expected);
-
         }
         #[test]
         fn test_compress_null_bytes_with_one_trailing_zeroes() {
-
             let mut bytes: Vec<u8> = vec![1, 2, 3, 0];
             compress_trailing_null_bytes(&mut bytes);
 
@@ -977,11 +851,9 @@ pub mod utils {
             let expected: Vec<u8> = vec![1, 2, 3, 0];
 
             assert_eq!(result, expected);
-
         }
         #[test]
         fn test_compress_null_bytes_with_empty_vector() {
-
             let mut bytes: Vec<u8> = vec![];
             compress_trailing_null_bytes(&mut bytes);
 
@@ -989,7 +861,6 @@ pub mod utils {
             let expected: Vec<u8> = vec![];
 
             assert_eq!(result, expected);
-
         }
         #[test]
         fn test_compress_null_bytes_with_one_zero_as_vector() {
