@@ -1,0 +1,45 @@
+# Valve Server Query
+
+# Description
+
+This package allows you to access the data provided by Valve's _Server Query_ and _Master Server Query_ (NOT SUPPORTED) protocols.
+
+- BLAZINGLY FAST
+- TYPE SAFE
+- EFFECIENT
+
+Want to use it from Python? You can do that!
+Want to us it from JavaScript? You can do that too!
+
+Rust is an accessible language that can be utilized in most any scenario, and become more accessible each day!
+
+# Installation
+
+`cargo install valve-server-query`
+
+In your `Cargo.toml` file.
+
+```toml
+[dependencies]
+valve-server-query = "0"
+```
+
+# Usage
+
+```rust
+let client = Client::new("ip:port").expects("Failed to connect to the server.");
+
+let info = client.info().expects("Failed to get server info.");
+let players = client.players().expects("Failed to get server players.");
+let rules = client.rules().expects("Failed to get server rules.");
+```
+
+# Contributing
+
+Pull requests are welcome.
+
+Requests for additional features are welcome: Create a GitHub Issue.
+
+# Support
+
+Feel free to create an issue if you experience any problems with this package.
