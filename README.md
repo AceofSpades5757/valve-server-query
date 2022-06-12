@@ -40,6 +40,8 @@ Pull requests are welcome.
 
 Requests for additional features are welcome: Create a GitHub Issue.
 
+If you would like additional content, such as the abiltiy to query the [Master Server Query Protocol](https://developer.valvesoftware.com/wiki/Master_Server_Query_Protocol), then feel free to contact me or create a GitHub Issue.
+
 # Support
 
 Feel free to create an issue if you experience any problems with this package.
