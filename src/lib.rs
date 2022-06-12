@@ -5,10 +5,12 @@
 //! # Game Server Info
 //!
 //! ```ignore
+//! use valve_server_query::client::Client;
+//!
 //! let client = Client::new("ip:port").expects("Failed to connect to the server.");
 //!
 //! let info = client.info().expects("Failed to get server info.");
-//! let players: Vec<Player> = client.players().expects("Failed to get server players.");
+//! let players = client.players().expects("Failed to get server players.");
 //! let rules = client.rules().expects("Failed to get server rules.");
 //! ```
 
@@ -791,6 +793,34 @@ pub mod client {
                 assert!(
                     false,
                     "Target URL is real and live, but we got back an Err response for A2S_INFO."
+                )
+            }
+        }
+        #[test]
+        #[ignore]
+        fn test_client_players_live() {
+            // Live server I own
+            let client = Client::new("54.186.150.6:9879").unwrap();
+            let players: Result<Vec<Player>, _> = client.players();
+            if let Ok(_) = players {
+            } else {
+                assert!(
+                    false,
+                    "Target URL is real and live, but we got back an Err response for A2S_PLAYER."
+                )
+            }
+        }
+        #[test]
+        #[ignore]
+        fn test_client_rules_live() {
+            // Live server I own
+            let client = Client::new("54.186.150.6:9879").unwrap();
+            let rules: Result<Rules, _> = client.rules();
+            if let Ok(_) = rules {
+            } else {
+                assert!(
+                    false,
+                    "Target URL is real and live, but we got back an Err response for A2S_RULES."
                 )
             }
         }
