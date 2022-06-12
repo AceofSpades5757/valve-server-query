@@ -2,5 +2,13 @@
 name = "valve-server-query"
 version = "0.3.1"
 edition = "2021"
+authors = ["Kyle L. Davis <aceofspades5757.github@gmail.com>"]
+description = "This package allows you to access the data provided by Valve's Server Query protocol."
+
+readme = "README.md"
+license = "MIT OR Apache-2.0"
+
+homepage = "https://github.com/AceofSpades5757/valve-server-query"
+repository = "https://github.com/AceofSpades5757/valve-server-query"
 
 [dependencies]
