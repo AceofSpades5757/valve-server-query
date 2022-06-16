@@ -2,11 +2,11 @@
 
 # Description
 
-This package allows you to access the data provided by Valve's _Server Query_ protocol.
+Crate allowing access to Valve's _Server Query_ protocol.
 
-- BLAZINGLY FAST
-- TYPE SAFE
-- EFFECIENT
+- :rocket: Blazingly Fast
+- :lock: Type Safe
+- :zap: Efficient
 
 Want to use it from Python? You can do that!
 Want to us it from JavaScript? You can do that too!
