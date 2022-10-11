@@ -15,14 +15,14 @@ Rust is an accessible language that can be utilized in most any scenario, and be
 
 # Installation
 
-`cargo install valve-server-query`
-
 In your `Cargo.toml` file.
 
 ```toml
 [dependencies]
-valve-server-query = "0.3.7"
+valve-server-query = "0.3.8"
 ```
+
+You can use `cargo add valve-server-query` also.
 
 # Usage
 
