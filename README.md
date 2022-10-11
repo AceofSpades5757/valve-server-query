@@ -27,7 +27,7 @@ You can use `cargo add valve-server-query` also.
 # Usage
 
 ```rust
-use valve_server_query::client::Client;
+use valve_server_query::Client;
 
 let client = Client::new("ip:port").expects("Connect to dedicated server running Valve game");
 
