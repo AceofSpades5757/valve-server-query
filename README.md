@@ -19,7 +19,7 @@ In your `Cargo.toml` file.
 
 ```toml
 [dependencies]
-valve-server-query = "0.3.8"
+valve-server-query = "0.3.9"
 ```
 
 You can use `cargo add valve-server-query` also.
@@ -27,13 +27,13 @@ You can use `cargo add valve-server-query` also.
 # Usage
 
 ```rust
-use valve_server_query::Client;
+use valve_server_query::client::Client;
 
-let client = Client::new("ip:port").expects("Failed to connect to the server.");
+let client = Client::new("ip:port").expects("Connect to dedicated server running Valve game");
 
-let info = client.info().expects("Failed to get server info.");
-let players = client.players().expects("Failed to get server players.");
-let rules = client.rules().expects("Failed to get server rules.");
+let info = client.info().expects("Get general server information");
+let players = client.players().expects("Get server player information");
+let rules = client.rules().expects("Get server rules");
 ```
 
 # Contributing
