@@ -19,7 +19,7 @@ In your `Cargo.toml` file.
 
 ```toml
 [dependencies]
-valve-server-query = "0.3.9"
+valve-server-query = "0.3.10"
 ```
 
 You can use `cargo add valve-server-query` also.
