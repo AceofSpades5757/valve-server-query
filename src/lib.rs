@@ -495,6 +495,8 @@ pub mod client {
 
     use crate::models::info::Info;
     use crate::models::Player;
+    use crate::types::{Long, Byte};
+    use crate::utils::get_multipacket_data;
 
     type Rules = HashMap<String, String>;
 
@@ -578,7 +580,30 @@ pub mod client {
             if packet_header == crate::constants::SIMPLE_RESPONSE_HEADER {
                 payload = buffer[4..bytes_returned + 1].to_vec();
             } else if packet_header == crate::constants::MULTI_PACKET_RESPONSE_HEADER {
-                todo!("Mutli Packet Response");
+
+                // id starts at 0
+                // tcp means they don't have to be in order
+                let (_answer_id, total, packet_id) = get_multipacket_data(&buffer);
+                let mut packet_map: HashMap<Byte, Vec<u8>> = HashMap::with_capacity(total as usize);
+
+                let current_payload = buffer[(4 + 4 + 1 + 1)..bytes_returned + 1].to_vec();
+                packet_map.insert(packet_id, current_payload);
+
+                // Get the remaining packet data.
+                while total > packet_map.len() as u8 {
+
+                    buffer = [0; 1400]; // Clear buffer
+                    bytes_returned = self.socket.recv(&mut buffer)?;
+
+                    let (_answer_id, _total, packet_id) = get_multipacket_data(&buffer);
+                    let current_payload = buffer[(4 + 4 + 1 + 1)..bytes_returned + 1].to_vec();
+                    packet_map.insert(packet_id, current_payload);
+                }
+
+                // Sort and Collect all packet data
+                let mut v: Vec<(u8, Vec<u8>)> = packet_map.into_iter().collect();
+                v.sort_by_key(|i| i.0);
+                payload = v.into_iter().map(|(_, bytes)| bytes).flatten().collect::<Vec<u8>>();
             } else {
                 panic!("An unknown packet header was received.");
             }
@@ -818,6 +843,20 @@ pub mod client {
 }
 
 pub mod utils {
+    use crate::types::{Byte, Long, get_long, get_byte};
+
+    pub fn get_multipacket_data(buffer: &[u8]) -> (Long, Byte, Byte) {
+        let v = buffer.to_vec();
+        let mut buffer_mut = v.iter();
+
+        let _header = get_long(&mut buffer_mut);
+        let answer_id = get_long(&mut buffer_mut);
+        let total = get_byte(&mut buffer_mut);
+        let packet_id = get_byte(&mut buffer_mut);
+
+        (answer_id, total, packet_id)
+    }
+
     pub fn compress_trailing_null_bytes(bytes: &mut Vec<u8>) {
         // No Size
         if bytes.len() == 0 || bytes.len() == 1 {
