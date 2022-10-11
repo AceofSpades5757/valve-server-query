@@ -21,12 +21,14 @@ In your `Cargo.toml` file.
 
 ```toml
 [dependencies]
-valve-server-query = "0"
+valve-server-query = "0.3.5"
 ```
 
 # Usage
 
 ```rust
+use valve_server_query::Client;
+
 let client = Client::new("ip:port").expects("Failed to connect to the server.");
 
 let info = client.info().expects("Failed to get server info.");

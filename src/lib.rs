@@ -13,6 +13,8 @@
 //! let rules = client.rules().expects("Get server rules");
 //! ```
 
+pub use client::Client;
+
 pub mod constants {
     const ENCODING: &str = "utf-8";
     const PACKET_SIZE: u16 = 1400;
