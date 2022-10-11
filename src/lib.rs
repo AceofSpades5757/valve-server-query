@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-#![allow(unused_assignments)]
 //! Access Valve's Server Query using this package.
 //!
 //! # Game Server Info
@@ -7,36 +6,33 @@
 //! ```ignore
 //! use valve_server_query::client::Client;
 //!
-//! let client = Client::new("ip:port").expects("Failed to connect to the server.");
+//! let client = Client::new("ip:port").expects("Connect to dedicated server running Valve game");
 //!
-//! let info = client.info().expects("Failed to get server info.");
-//! let players = client.players().expects("Failed to get server players.");
-//! let rules = client.rules().expects("Failed to get server rules.");
+//! let info = client.info().expects("Get general server information");
+//! let players = client.players().expects("Get server player information");
+//! let rules = client.rules().expects("Get server rules");
 //! ```
 
 pub mod constants {
     const ENCODING: &str = "utf-8";
     const PACKET_SIZE: u16 = 1400;
 
-    // Packet is not split.
+    /// Packet is not split.
     pub const SIMPLE_RESPONSE_HEADER: [u8; 4] = [0xFF, 0xFF, 0xFF, 0xFF];
-    // Packet is split.
+    /// Packet is split.
     pub const MULTI_PACKET_RESPONSE_HEADER: [u8; 4] = [0xFF, 0xFF, 0xFF, 0xFE];
 }
 
+/// All types are little endian
 pub mod types {
 
     // All types are little endian
-
-    use std::ffi::CString;
-
     pub type Byte = u8;
     pub type Short = i16;
     pub type Long = i32;
     pub type Float = f32;
     pub type LongLong = u64;
-    // Namespace issues
-    //pub type String = CString;
+    pub type CString = std::ffi::CString;
 
     /// All types are little endian,
     pub enum DataType {
@@ -47,14 +43,14 @@ pub mod types {
         // long   32 bit signed integer
         // float  32 bit floating point
         // long   long 64 bit unsigned integer
-        // string variable-length byte field, encoded in UTF-8, terminated by 0x00
+        // string variable-length byte field, encoded in UTF-8, terminated by null byte (0x00)
         Byte(Byte),
         Short(Short),
         Long(i32),
         Float(f32),
         LongLong(u64),
         // UTF-8 Encoded
-        // Null Terminated
+        // Null-Terminated
         String(CString),
     }
 
@@ -156,7 +152,7 @@ pub mod models {
 
             while it.len()
                 > (
-                    // There's a String to, but that has a varialble size.
+                    // There's a String too, but that has a varialble size.
                     std::mem::size_of::<Byte>()
                         + std::mem::size_of::<Long>()
                         + std::mem::size_of::<Float>()
@@ -208,68 +204,68 @@ pub mod models {
 
         use crate::types::{Byte, LongLong, Short};
 
-        // Represents a steam game server.
-        //
-        // Ref: <https://developer.valvesoftware.com/wiki/Server_queries#A2S_INFO>
+        /// Represents a steam game server.
+        ///
+        /// Ref: <https://developer.valvesoftware.com/wiki/Server_queries#A2S_INFO>
         #[derive(Debug)]
         pub struct Info {
-            // Response header. Always equal to 'I' (0x49).
+            /// Response header. Always equal to 'I' (0x49).
             header: Byte,
-            // Protocol version used by the server.
+            /// Protocol version used by the server.
             protocol: Byte,
-            // Name of the server.
+            /// Name of the server.
             name: String,
-            // Map the server has currently loaded.
+            /// Map the server has currently loaded.
             map: String,
-            // Name of the folder containing the game files.
+            /// Name of the folder containing the game files.
             folder: String,
-            // Full name of the game.
+            /// Full name of the game.
             game: String,
-            // Steam Application ID of game.
+            /// Steam Application ID of game.
             id: Short,
-            // Number of players on the server.
+            /// Number of players on the server.
             players: Byte,
-            // Maximum number of players the server reports it can hold.
+            /// Maximum number of players the server reports it can hold.
             max_players: Byte,
-            // Number of bots on the server.
+            /// Number of bots on the server.
             bots: Byte,
-            // Indicates the type of server:
-            // 'd' for a dedicated server
-            // 'l' for a non-dedicated server
-            // 'p' for a SourceTV relay (proxy)
+            /// Indicates the type of server:
+            /// 'd' for a dedicated server
+            /// 'l' for a non-dedicated server
+            /// 'p' for a SourceTV relay (proxy)
             server_type: ServerType,
-            // Indicates the operating system of the server:
-            // 'l' for Linux
-            // 'w' for Windows
-            // 'm' or 'o' for Mac (the code changed after L4D1)
+            /// Indicates the operating system of the server:
+            /// 'l' for Linux
+            /// 'w' for Windows
+            /// 'm' or 'o' for Mac (the code changed after L4D1)
             environment: Environment,
-            // Indicates whether the server requires a password:
-            // 0 for public
-            // 1 for private
+            /// Indicates whether the server requires a password:
+            /// 0 for public
+            /// 1 for private
             visibility: Visibility,
-            // Specifies whether the server uses VAC:
-            // 0 for unsecured
-            // 1 for secured
+            /// Specifies whether the server uses VAC:
+            /// 0 for unsecured
+            /// 1 for secured
             vac: Vac,
-            // Version of the game installed on the server.
+            /// Version of the game installed on the server.
             game_version: String,
-            // Flag for Extra Features
+            /// Flag for Extra Features
             extra_data_flag: Option<Byte>,
-            // The server's game port number.
+            /// The server's game port number.
             port: Option<Short>,
-            // Server's SteamID.
+            /// Server's SteamID.
             steam_id: Option<LongLong>,
-            // Spectator port number for SourceTV.
+            /// Spectator port number for SourceTV.
             spectator_port: Option<Short>,
-            // Name of the spectator server for SourceTV.
+            /// Name of the spectator server for SourceTV.
             spectator_name: Option<String>,
-            // Tags that describe the game according to the server (for future use.)
+            /// Tags that describe the game according to the server (for future use.)
             keywords: Option<String>,
-            // The server's 64-bit GameID. If this is present, a more accurate AppID is present in the
-            // low 24 bits. The earlier AppID could have been truncated as it was forced into 16-bit
-            // storage.
+            /// The server's 64-bit GameID. If this is present, a more accurate AppID is present in the
+            /// low 24 bits. The earlier AppID could have been truncated as it was forced into 16-bit
+            /// storage.
             game_id: Option<LongLong>,
-            // Trailing bytes for Self::from_bytes
+            /// Trailing bytes for Self::from_bytes
             trailing_bytes: Option<Vec<Byte>>,
         }
 
@@ -448,7 +444,7 @@ pub mod models {
         }
 
         #[derive(Debug, Eq, PartialEq)]
-        // Specifies if a server uses VAC.
+        /// Specifies if a server uses VAC.
         enum Vac {
             Unsecured,
             Secured,
@@ -606,7 +602,7 @@ pub mod client {
             self.socket.send_to(&request, &self.addr)?;
 
             let mut buffer = [0; 1400];
-            let mut bytes_returned = self.socket.recv(&mut buffer)?;
+            let _bytes_returned = self.socket.recv(&mut buffer)?;
 
             //  Get Challenge
             let challenge = buffer
@@ -630,7 +626,7 @@ pub mod client {
             // Get Data
             self.socket.send_to(&request, &self.addr)?;
             buffer = [0; 1400];
-            bytes_returned = self.socket.recv(&mut buffer)?;
+            let bytes_returned = self.socket.recv(&mut buffer)?;
 
             // Parse Data
             let packet_header = &buffer[..=3];
@@ -654,7 +650,7 @@ pub mod client {
         }
     }
 
-    // A2S_RULES Implementation
+    /// A2S_RULES Implementation
     impl Client {
         pub fn rules(&self) -> Result<Rules, io::Error> {
             use crate::types::Byte;
@@ -669,7 +665,7 @@ pub mod client {
             self.socket.send_to(&request, &self.addr)?;
 
             let mut buffer = [0; 1400];
-            let mut bytes_returned = self.socket.recv(&mut buffer)?;
+            let _bytes_returned = self.socket.recv(&mut buffer)?;
 
             //  Get Challenge
             let challenge = buffer
@@ -693,7 +689,7 @@ pub mod client {
             // Get Data
             self.socket.send_to(&request, &self.addr)?;
             buffer = [0; 1400];
-            bytes_returned = self.socket.recv(&mut buffer)?;
+            let _bytes_returned = self.socket.recv(&mut buffer)?;
 
             // Parse Data
             let packet_header = &buffer[..=3];
@@ -723,15 +719,9 @@ pub mod client {
             let mut it = bytes.iter();
             let mut rules = HashMap::new();
 
-            // FIXME: We're getting an error on get_string, where the iterator has been exhausted.
             while it.len() > 0 {
                 let name = get_string(&mut it);
                 let value = get_string(&mut it);
-
-                // Empty Rule
-                //if name.len() == 0 && value.len() == 0 {
-                //break;
-                //}
 
                 rules.insert(name, value);
             }
