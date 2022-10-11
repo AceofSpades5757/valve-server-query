@@ -495,7 +495,7 @@ pub mod client {
 
     use crate::models::info::Info;
     use crate::models::Player;
-    use crate::types::{Long, Byte};
+    use crate::types::Byte;
     use crate::utils::get_multipacket_data;
 
     type Rules = HashMap<String, String>;
@@ -580,7 +580,6 @@ pub mod client {
             if packet_header == crate::constants::SIMPLE_RESPONSE_HEADER {
                 payload = buffer[4..bytes_returned + 1].to_vec();
             } else if packet_header == crate::constants::MULTI_PACKET_RESPONSE_HEADER {
-
                 // id starts at 0
                 // tcp means they don't have to be in order
                 let (_answer_id, total, packet_id) = get_multipacket_data(&buffer);
@@ -616,7 +615,6 @@ pub mod client {
     // A2S_PLAYER Implementation
     impl Client {
         pub fn players(&self) -> Result<Vec<Player>, io::Error> {
-            use crate::types::Byte;
 
             let request = [
                 0xFF, 0xFF, 0xFF, 0xFF, // Simple Header
@@ -651,7 +649,7 @@ pub mod client {
             // Get Data
             self.socket.send_to(&request, &self.addr)?;
             buffer = [0; 1400];
-            let bytes_returned = self.socket.recv(&mut buffer)?;
+            let mut bytes_returned = self.socket.recv(&mut buffer)?;
 
             // Parse Data
             let packet_header = &buffer[..=3];
@@ -660,8 +658,29 @@ pub mod client {
             if packet_header == crate::constants::SIMPLE_RESPONSE_HEADER {
                 payload = buffer[4..].to_vec();
             } else if packet_header == crate::constants::MULTI_PACKET_RESPONSE_HEADER {
-                // Need to form together to make larger packet.
-                todo!("Mutli Packet Response");
+                // id starts at 0
+                // tcp means they don't have to be in order
+                let (_answer_id, total, packet_id) = get_multipacket_data(&buffer);
+                let mut packet_map: HashMap<Byte, Vec<u8>> = HashMap::with_capacity(total as usize);
+
+                let current_payload = buffer[(4 + 4 + 1 + 1)..bytes_returned + 1].to_vec();
+                packet_map.insert(packet_id, current_payload);
+
+                // Get the remaining packet data.
+                while total > packet_map.len() as u8 {
+
+                    buffer = [0; 1400]; // Clear buffer
+                    bytes_returned = self.socket.recv(&mut buffer)?;
+
+                    let (_answer_id, _total, packet_id) = get_multipacket_data(&buffer);
+                    let current_payload = buffer[(4 + 4 + 1 + 1)..bytes_returned + 1].to_vec();
+                    packet_map.insert(packet_id, current_payload);
+                }
+
+                // Sort and Collect all packet data
+                let mut v: Vec<(u8, Vec<u8>)> = packet_map.into_iter().collect();
+                v.sort_by_key(|i| i.0);
+                payload = v.into_iter().map(|(_, bytes)| bytes).flatten().collect::<Vec<u8>>();
             } else {
                 panic!("An unknown packet header was received.");
             }
@@ -678,7 +697,6 @@ pub mod client {
     /// A2S_RULES Implementation
     impl Client {
         pub fn rules(&self) -> Result<Rules, io::Error> {
-            use crate::types::Byte;
             use crate::utils::compress_trailing_null_bytes;
 
             let request = [
@@ -714,7 +732,7 @@ pub mod client {
             // Get Data
             self.socket.send_to(&request, &self.addr)?;
             buffer = [0; 1400];
-            let _bytes_returned = self.socket.recv(&mut buffer)?;
+            let mut bytes_returned = self.socket.recv(&mut buffer)?;
 
             // Parse Data
             let packet_header = &buffer[..=3];
@@ -727,8 +745,29 @@ pub mod client {
                 payload = buffer[7..].to_vec();
                 compress_trailing_null_bytes(&mut payload);
             } else if packet_header == crate::constants::MULTI_PACKET_RESPONSE_HEADER {
-                // Need to form together to make larger packet.
-                todo!("Mutli Packet Response");
+                // id starts at 0
+                // tcp means they don't have to be in order
+                let (_answer_id, total, packet_id) = get_multipacket_data(&buffer);
+                let mut packet_map: HashMap<Byte, Vec<u8>> = HashMap::with_capacity(total as usize);
+
+                let current_payload = buffer[(4 + 4 + 1 + 1)..bytes_returned + 1].to_vec();
+                packet_map.insert(packet_id, current_payload);
+
+                // Get the remaining packet data.
+                while total > packet_map.len() as u8 {
+
+                    buffer = [0; 1400]; // Clear buffer
+                    bytes_returned = self.socket.recv(&mut buffer)?;
+
+                    let (_answer_id, _total, packet_id) = get_multipacket_data(&buffer);
+                    let current_payload = buffer[(4 + 4 + 1 + 1)..bytes_returned + 1].to_vec();
+                    packet_map.insert(packet_id, current_payload);
+                }
+
+                // Sort and Collect all packet data
+                let mut v: Vec<(u8, Vec<u8>)> = packet_map.into_iter().collect();
+                v.sort_by_key(|i| i.0);
+                payload = v.into_iter().map(|(_, bytes)| bytes).flatten().collect::<Vec<u8>>();
             } else {
                 panic!("An unknown packet header was received.");
             }
