@@ -3,14 +3,14 @@
 //!
 //! # Game Server Info
 //!
-//! ```ignore
+//! ```no_run
 //! use valve_server_query::Client;
 //!
-//! let client = Client::new("ip:port").expects("Connect to dedicated server running Valve game");
+//! let client = Client::new("127.0.0.1:12345").expect("Connect to dedicated server running Valve game");
 //!
-//! let info = client.info().expects("Get general server information");
-//! let players = client.players().expects("Get server player information");
-//! let rules = client.rules().expects("Get server rules");
+//! let info = client.info().expect("Get general server information");
+//! let players = client.players().expect("Get server player information");
+//! let rules = client.rules().expect("Get server rules");
 //! ```
 
 pub use client::Client;
