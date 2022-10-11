@@ -14,6 +14,8 @@
 //! ```
 
 pub use client::Client;
+pub use models::info::Info;
+pub use models::Player;
 
 pub mod constants {
     const ENCODING: &str = "utf-8";
@@ -592,7 +594,6 @@ pub mod client {
 
                 // Get the remaining packet data.
                 while total > packet_map.len() as u8 {
-
                     buffer = [0; 1400]; // Clear buffer
                     bytes_returned = self.socket.recv(&mut buffer)?;
 
@@ -604,7 +605,11 @@ pub mod client {
                 // Sort and Collect all packet data
                 let mut v: Vec<(u8, Vec<u8>)> = packet_map.into_iter().collect();
                 v.sort_by_key(|i| i.0);
-                payload = v.into_iter().map(|(_, bytes)| bytes).flatten().collect::<Vec<u8>>();
+                payload = v
+                    .into_iter()
+                    .map(|(_, bytes)| bytes)
+                    .flatten()
+                    .collect::<Vec<u8>>();
             } else {
                 panic!("An unknown packet header was received.");
             }
@@ -617,7 +622,6 @@ pub mod client {
     // A2S_PLAYER Implementation
     impl Client {
         pub fn players(&self) -> Result<Vec<Player>, io::Error> {
-
             let request = [
                 0xFF, 0xFF, 0xFF, 0xFF, // Simple Header
                 0x55, // Header
@@ -670,7 +674,6 @@ pub mod client {
 
                 // Get the remaining packet data.
                 while total > packet_map.len() as u8 {
-
                     buffer = [0; 1400]; // Clear buffer
                     bytes_returned = self.socket.recv(&mut buffer)?;
 
@@ -682,7 +685,11 @@ pub mod client {
                 // Sort and Collect all packet data
                 let mut v: Vec<(u8, Vec<u8>)> = packet_map.into_iter().collect();
                 v.sort_by_key(|i| i.0);
-                payload = v.into_iter().map(|(_, bytes)| bytes).flatten().collect::<Vec<u8>>();
+                payload = v
+                    .into_iter()
+                    .map(|(_, bytes)| bytes)
+                    .flatten()
+                    .collect::<Vec<u8>>();
             } else {
                 panic!("An unknown packet header was received.");
             }
@@ -757,7 +764,6 @@ pub mod client {
 
                 // Get the remaining packet data.
                 while total > packet_map.len() as u8 {
-
                     buffer = [0; 1400]; // Clear buffer
                     bytes_returned = self.socket.recv(&mut buffer)?;
 
@@ -769,7 +775,11 @@ pub mod client {
                 // Sort and Collect all packet data
                 let mut v: Vec<(u8, Vec<u8>)> = packet_map.into_iter().collect();
                 v.sort_by_key(|i| i.0);
-                payload = v.into_iter().map(|(_, bytes)| bytes).flatten().collect::<Vec<u8>>();
+                payload = v
+                    .into_iter()
+                    .map(|(_, bytes)| bytes)
+                    .flatten()
+                    .collect::<Vec<u8>>();
             } else {
                 panic!("An unknown packet header was received.");
             }
@@ -884,7 +894,7 @@ pub mod client {
 }
 
 pub mod utils {
-    use crate::types::{Byte, Long, get_long, get_byte};
+    use crate::types::{get_byte, get_long, Byte, Long};
 
     pub fn get_multipacket_data(buffer: &[u8]) -> (Long, Byte, Byte) {
         let v = buffer.to_vec();

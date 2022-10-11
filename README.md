@@ -21,7 +21,7 @@ In your `Cargo.toml` file.
 
 ```toml
 [dependencies]
-valve-server-query = "0.3.5"
+valve-server-query = "0.3.6"
 ```
 
 # Usage
