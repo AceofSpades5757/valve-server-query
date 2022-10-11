@@ -14,7 +14,7 @@
 //! ```
 
 pub use client::Client;
-pub use models::info::Info;
+pub use models::info::Server;
 pub use models::Player;
 
 pub mod constants {
@@ -212,7 +212,7 @@ pub mod models {
         ///
         /// Ref: <https://developer.valvesoftware.com/wiki/Server_queries#A2S_INFO>
         #[derive(Debug)]
-        pub struct Info {
+        pub struct Server {
             /// Response header. Always equal to 'I' (0x49).
             header: Byte,
             /// Protocol version used by the server.
@@ -273,7 +273,7 @@ pub mod models {
             trailing_bytes: Option<Vec<Byte>>,
         }
 
-        impl Info {
+        impl Server {
             pub fn from_bytes(bytes: &[u8]) -> Self {
                 use crate::types::get_byte;
                 use crate::types::get_longlong;
@@ -497,7 +497,7 @@ pub mod client {
     use std::net::SocketAddr;
     use std::net::{IpAddr, Ipv4Addr, UdpSocket};
 
-    use crate::models::info::Info;
+    use crate::models::info::Server;
     use crate::models::Player;
     use crate::types::Byte;
     use crate::utils::get_multipacket_data;
@@ -546,7 +546,7 @@ pub mod client {
 
     // A2S_INFO Implementation
     impl Client {
-        pub fn info(&self) -> Result<Info, io::Error> {
+        pub fn info(&self) -> Result<Server, io::Error> {
             let mut request: Vec<u8> = vec![
                 255, 255, 255, 255, 84, 83, 111, 117, 114, 99, 101, 32, 69, 110, 103, 105, 110,
                 101, 32, 81, 117, 101, 114, 121, 0,
@@ -614,7 +614,7 @@ pub mod client {
                 panic!("An unknown packet header was received.");
             }
 
-            let info = Info::from_bytes(&payload);
+            let info = Server::from_bytes(&payload);
             Ok(info)
         }
     }
@@ -838,7 +838,7 @@ pub mod client {
         fn test_client_info() {
             // Dummy
             let client = Client::new("127.0.0.1:12345").unwrap();
-            let info: Result<Info, _> = client.info();
+            let info: Result<Server, _> = client.info();
             if let Err(_) = info {
             } else {
                 assert!(
@@ -853,7 +853,7 @@ pub mod client {
         fn test_client_info_live() {
             // Live server I own
             let client = Client::new("54.186.150.6:9879").unwrap();
-            let info: Result<Info, _> = client.info();
+            let info: Result<Server, _> = client.info();
             if let Ok(_) = info {
             } else {
                 assert!(
