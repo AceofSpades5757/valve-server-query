@@ -21,15 +21,12 @@ pub use models::info::Visibility;
 pub use models::Player;
 pub use server::Server;
 
-pub mod constants {
-    const ENCODING: &str = "utf-8";
-    const PACKET_SIZE: u16 = 1400;
-
-    /// Packet is not split.
-    pub const SIMPLE_RESPONSE_HEADER: [u8; 4] = [0xFF, 0xFF, 0xFF, 0xFF];
-    /// Packet is split.
-    pub const MULTI_PACKET_RESPONSE_HEADER: [u8; 4] = [0xFF, 0xFF, 0xFF, 0xFE];
-}
+const ENCODING: &str = "utf-8";
+const PACKET_SIZE: usize = 1400;
+/// Packet is not split.
+const SIMPLE_RESPONSE_HEADER: [u8; 4] = [0xFF, 0xFF, 0xFF, 0xFF];
+/// Packet is split.
+const MULTI_PACKET_RESPONSE_HEADER: [u8; 4] = [0xFF, 0xFF, 0xFF, 0xFE];
 
 /// All types are little endian
 pub mod types {
@@ -590,11 +587,11 @@ pub mod models {
 
 pub mod server {
 
+    use crate::{MULTI_PACKET_RESPONSE_HEADER, PACKET_SIZE, SIMPLE_RESPONSE_HEADER};
     use std::collections::HashMap;
     use std::error::Error;
     use std::io;
-    use std::net::SocketAddr;
-    use std::net::{IpAddr, Ipv4Addr, UdpSocket};
+    use std::net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket};
 
     use crate::models::info::Info;
     use crate::models::Player;
@@ -663,7 +660,7 @@ pub mod server {
 
             self.socket.send_to(&request, &self.addr)?;
 
-            let mut buffer = [0; 1400];
+            let mut buffer = [0; PACKET_SIZE];
             let mut bytes_returned = self.socket.recv(&mut buffer)?;
 
             if bytes_returned == 9 {
@@ -684,15 +681,16 @@ pub mod server {
                 request.extend(challenge);
 
                 self.socket.send_to(&request, &self.addr)?;
-                buffer = [0; 1400];
+                buffer = [0; PACKET_SIZE];
                 bytes_returned = self.socket.recv(&mut buffer)?;
             }
 
             let packet_header = &buffer[..4];
             let payload: Vec<u8>;
-            if packet_header == crate::constants::SIMPLE_RESPONSE_HEADER {
+
+            if packet_header == SIMPLE_RESPONSE_HEADER {
                 payload = buffer[4..bytes_returned + 1].to_vec();
-            } else if packet_header == crate::constants::MULTI_PACKET_RESPONSE_HEADER {
+            } else if packet_header == MULTI_PACKET_RESPONSE_HEADER {
                 // id starts at 0
                 // tcp means they don't have to be in order
                 let (_answer_id, total, packet_id) = get_multipacket_data(&buffer);
@@ -703,7 +701,7 @@ pub mod server {
 
                 // Get the remaining packet data.
                 while total > packet_map.len() as u8 {
-                    buffer = [0; 1400]; // Clear buffer
+                    buffer = [0; PACKET_SIZE]; // Clear buffer
                     bytes_returned = self.socket.recv(&mut buffer)?;
 
                     let (_answer_id, _total, packet_id) = get_multipacket_data(&buffer);
@@ -739,7 +737,7 @@ pub mod server {
 
             self.socket.send_to(&request, &self.addr)?;
 
-            let mut buffer = [0; 1400];
+            let mut buffer = [0; PACKET_SIZE];
             let _bytes_returned = self.socket.recv(&mut buffer)?;
 
             //  Get Challenge
@@ -763,16 +761,16 @@ pub mod server {
 
             // Get Data
             self.socket.send_to(&request, &self.addr)?;
-            buffer = [0; 1400];
+            buffer = [0; PACKET_SIZE];
             let mut bytes_returned = self.socket.recv(&mut buffer)?;
 
             // Parse Data
             let packet_header = &buffer[..=3];
 
             let payload: Vec<u8>;
-            if packet_header == crate::constants::SIMPLE_RESPONSE_HEADER {
+            if packet_header == SIMPLE_RESPONSE_HEADER {
                 payload = buffer[4..].to_vec();
-            } else if packet_header == crate::constants::MULTI_PACKET_RESPONSE_HEADER {
+            } else if packet_header == MULTI_PACKET_RESPONSE_HEADER {
                 // id starts at 0
                 // tcp means they don't have to be in order
                 let (_answer_id, total, packet_id) = get_multipacket_data(&buffer);
@@ -783,7 +781,7 @@ pub mod server {
 
                 // Get the remaining packet data.
                 while total > packet_map.len() as u8 {
-                    buffer = [0; 1400]; // Clear buffer
+                    buffer = [0; PACKET_SIZE]; // Clear buffer
                     bytes_returned = self.socket.recv(&mut buffer)?;
 
                     let (_answer_id, _total, packet_id) = get_multipacket_data(&buffer);
@@ -825,7 +823,7 @@ pub mod server {
 
             self.socket.send_to(&request, &self.addr)?;
 
-            let mut buffer = [0; 1400];
+            let mut buffer = [0; PACKET_SIZE];
             let _bytes_returned = self.socket.recv(&mut buffer)?;
 
             //  Get Challenge
@@ -849,7 +847,7 @@ pub mod server {
 
             // Get Data
             self.socket.send_to(&request, &self.addr)?;
-            buffer = [0; 1400];
+            buffer = [0; PACKET_SIZE];
             let mut bytes_returned = self.socket.recv(&mut buffer)?;
 
             // Parse Data
@@ -857,12 +855,12 @@ pub mod server {
             let _header: &Byte = &buffer[4];
 
             let mut payload: Vec<u8>;
-            if packet_header == crate::constants::SIMPLE_RESPONSE_HEADER {
+            if packet_header == SIMPLE_RESPONSE_HEADER {
                 let _rule_count: Byte = buffer[5].clone();
                 let _ = buffer[6]; // Null Byte
                 payload = buffer[7..].to_vec();
                 compress_trailing_null_bytes(&mut payload);
-            } else if packet_header == crate::constants::MULTI_PACKET_RESPONSE_HEADER {
+            } else if packet_header == MULTI_PACKET_RESPONSE_HEADER {
                 // id starts at 0
                 // tcp means they don't have to be in order
                 let (_answer_id, total, packet_id) = get_multipacket_data(&buffer);
@@ -873,7 +871,7 @@ pub mod server {
 
                 // Get the remaining packet data.
                 while total > packet_map.len() as u8 {
-                    buffer = [0; 1400]; // Clear buffer
+                    buffer = [0; PACKET_SIZE]; // Clear buffer
                     bytes_returned = self.socket.recv(&mut buffer)?;
 
                     let (_answer_id, _total, packet_id) = get_multipacket_data(&buffer);
