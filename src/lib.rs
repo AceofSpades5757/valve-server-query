@@ -8,13 +8,17 @@
 //!
 //! let client = Client::new("127.0.0.1:12345").expect("Connect to dedicated server running Valve game");
 //!
-//! let info = client.info().expect("Get general server information");
+//! let server = client.info().expect("Get general server information");
 //! let players = client.players().expect("Get server player information");
 //! let rules = client.rules().expect("Get server rules");
 //! ```
 
 pub use client::Client;
+pub use models::info::Platform;
 pub use models::info::Server;
+pub use models::info::ServerType;
+pub use models::info::Vac;
+pub use models::info::Visibility;
 pub use models::Player;
 
 pub mod constants {
@@ -242,7 +246,7 @@ pub mod models {
             /// 'l' for Linux
             /// 'w' for Windows
             /// 'm' or 'o' for Mac (the code changed after L4D1)
-            environment: Environment,
+            environment: Platform,
             /// Indicates whether the server requires a password:
             /// 0 for public
             /// 1 for private
@@ -294,7 +298,7 @@ pub mod models {
                 let max_players = get_byte(&mut it);
                 let bots = get_byte(&mut it);
                 let server_type = ServerType::from_byte(&get_byte(&mut it));
-                let environment = Environment::from_byte(&get_byte(&mut it));
+                let environment = Platform::from_byte(&get_byte(&mut it));
                 let visibility = Visibility::from_byte(&get_byte(&mut it));
                 let vac = Vac::from_byte(&get_byte(&mut it));
                 let game_version = get_string(&mut it);
@@ -388,8 +392,96 @@ pub mod models {
             }
         }
 
+        /// Getters
+        impl Server {
+            /// Name of the server.
+            pub fn name(&self) -> &str {
+                &self.name
+            }
+            /// Map the server has currently loaded.
+            pub fn map(&self) -> &str {
+                &self.map
+            }
+            /// Name of the folder containing the game files.
+            pub fn folder(&self) -> &str {
+                &self.folder
+            }
+            /// Tags that describe the game according to the server (for future use)
+            // TODO: Current server has CSV format. Is this consistent?
+            pub fn keywords(&self) -> &Option<String> {
+                &self.keywords
+            }
+
+            /// Full name of the game.
+            pub fn game(&self) -> &str {
+                &self.game
+            }
+            /// The server's 64-bit GameID. If this is present, a more accurate AppID is present in the
+            /// low 24 bits. The earlier AppID could have been truncated as it was forced into 16-bit
+            /// storage.
+            pub fn game_id(&self) -> &Option<LongLong> {
+                &self.game_id
+            }
+            /// Version of the game installed on the server.
+            pub fn game_version(&self) -> &str {
+                &self.game_version
+            }
+            /// Steam Application ID of game
+            pub fn steam_app_id(&self) -> &Short {
+                &self.id
+            }
+            /// Server's SteamID.
+            pub fn steam_id(&self) -> &Option<LongLong> {
+                &self.steam_id
+            }
+
+            /// Number of players on the server.
+            pub fn player_count(&self) -> &Byte {
+                &self.players
+            }
+            /// Maximum number of players the server reports it can hold.
+            pub fn player_max(&self) -> &Byte {
+                &self.max_players
+            }
+            /// Number of bots on the server.
+            pub fn bot_count(&self) -> &Byte {
+                &self.bots
+            }
+
+            /// Indicates the type of server
+            pub fn server_type(&self) -> &ServerType {
+                &self.server_type
+            }
+            /// Indicates the operating system of the server
+            pub fn platform(&self) -> &Platform {
+                &self.environment
+            }
+
+            /// Indicates whether the server requires a password
+            pub fn visibility(&self) -> &Visibility {
+                &self.visibility
+            }
+            /// Specifies whether the server uses VAC
+            pub fn vac(&self) -> &Vac {
+                &self.vac
+            }
+
+            /// The server's game port number
+            pub fn port(&self) -> &Option<Short> {
+                &self.port
+            }
+            /// Name of the spectator server for SourceTV.
+            pub fn spectator_name(&self) -> &Option<String> {
+                &self.spectator_name
+            }
+            /// Spectator port number for SourceTV.
+            pub fn spectator_port(&self) -> &Option<Short> {
+                &self.spectator_port
+            }
+        }
+
         #[derive(Debug, Eq, PartialEq)]
-        enum ServerType {
+        pub enum ServerType {
             Dedicated,
             NonDedicated,
             SourceTvRelay,
@@ -409,15 +501,15 @@ pub mod models {
         }
 
         #[derive(Debug, Eq, PartialEq)]
-        enum Environment {
+        pub enum Platform {
             Linux,
             Windows,
             Mac,
         }
 
-        impl Environment {
+        impl Platform {
             fn from_byte(byte: &u8) -> Self {
-                use self::Environment::{Linux, Mac, Windows};
+                use self::Platform::{Linux, Mac, Windows};
 
                 match *byte as char {
                     'l' => Linux,
@@ -430,7 +522,7 @@ pub mod models {
         }
 
         #[derive(Debug, Eq, PartialEq)]
-        enum Visibility {
+        pub enum Visibility {
             Public,
             Private,
         }
@@ -449,7 +541,7 @@ pub mod models {
 
         #[derive(Debug, Eq, PartialEq)]
         /// Specifies if a server uses VAC.
-        enum Vac {
+        pub enum Vac {
             Unsecured,
             Secured,
         }
@@ -475,7 +567,7 @@ pub mod models {
             }
             #[test]
             fn test_environment_from_byte() {
-                assert_eq!(Environment::Linux, Environment::from_byte(&('l' as u8)));
+                assert_eq!(Platform::Linux, Platform::from_byte(&('l' as u8)));
             }
             #[test]
             fn test_visibility_from_byte() {

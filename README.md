@@ -19,7 +19,7 @@ In your `Cargo.toml` file.
 
 ```toml
 [dependencies]
-valve-server-query = "0.3.10"
+valve-server-query = "0.3.11"
 ```
 
 You can use `cargo add valve-server-query` also.
@@ -31,7 +31,7 @@ use valve_server_query::Client;
 
 let client = Client::new("127.0.0.1:12345").expect("Connect to dedicated server running Valve game");
 
-let info = client.info().expect("Get general server information");
+let server = client.info().expect("Get general server information");
 let players = client.players().expect("Get server player information");
 let rules = client.rules().expect("Get server rules");
 ```
