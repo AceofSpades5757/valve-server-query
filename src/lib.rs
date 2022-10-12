@@ -4,18 +4,18 @@
 //! # Game Server Info
 //!
 //! ```no_run
-//! use valve_server_query::Client;
+//! use valve_server_query::Server;
 //!
-//! let client = Client::new("127.0.0.1:12345").expect("Connect to dedicated server running Valve game");
+//! let server = Server::new("127.0.0.1:12345").expect("Connect to dedicated server running Valve game");
 //!
-//! let server = client.info().expect("Get general server information");
-//! let players = client.players().expect("Get server player information");
-//! let rules = client.rules().expect("Get server rules");
+//! let info = server.info().expect("Get general server information");
+//! let players = server.players().expect("Get server player information");
+//! let rules = server.rules().expect("Get server rules");
 //! ```
 
-pub use client::Client;
+pub use server::Server;
 pub use models::info::Platform;
-pub use models::info::Server;
+pub use models::info::Info;
 pub use models::info::ServerType;
 pub use models::info::Vac;
 pub use models::info::Visibility;
@@ -216,7 +216,7 @@ pub mod models {
         ///
         /// Ref: <https://developer.valvesoftware.com/wiki/Server_queries#A2S_INFO>
         #[derive(Debug)]
-        pub struct Server {
+        pub struct Info {
             /// Response header. Always equal to 'I' (0x49).
             header: Byte,
             /// Protocol version used by the server.
@@ -277,7 +277,7 @@ pub mod models {
             trailing_bytes: Option<Vec<Byte>>,
         }
 
-        impl Server {
+        impl Info {
             pub fn from_bytes(bytes: &[u8]) -> Self {
                 use crate::types::get_byte;
                 use crate::types::get_longlong;
@@ -393,7 +393,7 @@ pub mod models {
         }
 
         /// Getters
-        impl Server {
+        impl Info {
             /// Name of the server.
             pub fn name(&self) -> &str {
                 &self.name
@@ -581,7 +581,7 @@ pub mod models {
     }
 }
 
-pub mod client {
+pub mod server {
 
     use std::collections::HashMap;
     use std::error::Error;
@@ -589,19 +589,19 @@ pub mod client {
     use std::net::SocketAddr;
     use std::net::{IpAddr, Ipv4Addr, UdpSocket};
 
-    use crate::models::info::Server;
+    use crate::models::info::Info;
     use crate::models::Player;
     use crate::types::Byte;
     use crate::utils::get_multipacket_data;
 
     type Rules = HashMap<String, String>;
 
-    pub struct Client {
+    pub struct Server {
         socket: UdpSocket,
         addr: SocketAddr,
     }
 
-    impl Client {
+    impl Server {
         pub fn new(url: &str) -> Result<Self, Box<dyn Error>> {
             // Init
             let addr: SocketAddr;
@@ -637,8 +637,8 @@ pub mod client {
     }
 
     // A2S_INFO Implementation
-    impl Client {
-        pub fn info(&self) -> Result<Server, io::Error> {
+    impl Server {
+        pub fn info(&self) -> Result<Info, io::Error> {
             let mut request: Vec<u8> = vec![
                 255, 255, 255, 255, 84, 83, 111, 117, 114, 99, 101, 32, 69, 110, 103, 105, 110,
                 101, 32, 81, 117, 101, 114, 121, 0,
@@ -706,13 +706,13 @@ pub mod client {
                 panic!("An unknown packet header was received.");
             }
 
-            let info = Server::from_bytes(&payload);
+            let info = Info::from_bytes(&payload);
             Ok(info)
         }
     }
 
     // A2S_PLAYER Implementation
-    impl Client {
+    impl Server {
         pub fn players(&self) -> Result<Vec<Player>, io::Error> {
             let request = [
                 0xFF, 0xFF, 0xFF, 0xFF, // Simple Header
@@ -796,7 +796,7 @@ pub mod client {
     }
 
     /// A2S_RULES Implementation
-    impl Client {
+    impl Server {
         pub fn rules(&self) -> Result<Rules, io::Error> {
             use crate::utils::compress_trailing_null_bytes;
 
@@ -905,10 +905,10 @@ pub mod client {
 
         #[test]
         fn test_client_init() {
-            let client: Result<_, _> = Client::new("");
-            if let Err(_) = client {
+            let server: Result<_, _> = Server::new("");
+            if let Err(_) = server {
             } else {
-                assert!(false, "Client was successfully contructed when it should have failed when parsing URL.")
+                assert!(false, "Server was successfully contructed when it should have failed when parsing URL.")
             }
         }
 
@@ -916,12 +916,12 @@ pub mod client {
         #[ignore]
         fn test_client_init_live() {
             // Live server I own
-            let client: Result<_, _> = Client::new("54.186.150.6:9879");
-            if let Ok(_) = client {
+            let server: Result<_, _> = Server::new("54.186.150.6:9879");
+            if let Ok(_) = server {
             } else {
                 assert!(
                     false,
-                    "Client failed to be contructed when it should have succeeded (LIVE TEST)."
+                    "Server failed to be contructed when it should have succeeded (LIVE TEST)."
                 )
             }
         }
@@ -929,8 +929,8 @@ pub mod client {
         #[test]
         fn test_client_info() {
             // Dummy
-            let client = Client::new("127.0.0.1:12345").unwrap();
-            let info: Result<Server, _> = client.info();
+            let server = Server::new("127.0.0.1:12345").unwrap();
+            let info: Result<Info, _> = server.info();
             if let Err(_) = info {
             } else {
                 assert!(
@@ -944,8 +944,8 @@ pub mod client {
         #[ignore]
         fn test_client_info_live() {
             // Live server I own
-            let client = Client::new("54.186.150.6:9879").unwrap();
-            let info: Result<Server, _> = client.info();
+            let server = Server::new("54.186.150.6:9879").unwrap();
+            let info: Result<Info, _> = server.info();
             if let Ok(_) = info {
             } else {
                 assert!(
@@ -958,8 +958,8 @@ pub mod client {
         #[ignore]
         fn test_client_players_live() {
             // Live server I own
-            let client = Client::new("54.186.150.6:9879").unwrap();
-            let players: Result<Vec<Player>, _> = client.players();
+            let server = Server::new("54.186.150.6:9879").unwrap();
+            let players: Result<Vec<Player>, _> = server.players();
             if let Ok(_) = players {
             } else {
                 assert!(
@@ -972,8 +972,8 @@ pub mod client {
         #[ignore]
         fn test_client_rules_live() {
             // Live server I own
-            let client = Client::new("54.186.150.6:9879").unwrap();
-            let rules: Result<Rules, _> = client.rules();
+            let server = Server::new("54.186.150.6:9879").unwrap();
+            let rules: Result<Rules, _> = server.rules();
             if let Ok(_) = rules {
             } else {
                 assert!(

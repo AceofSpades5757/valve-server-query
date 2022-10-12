@@ -1,18 +1,18 @@
-use valve_server_query::Client;
+use valve_server_query::Server;
 
 fn main() {
-    let client =
-        Client::new("127.0.0.1:12345").expect("Connect to dedicated server running Valve game");
+    let server =
+        Server::new("127.0.0.1:12345").expect("Connect to dedicated server running Valve game");
 
-    let server = client.info().expect("Get general server information");
-    let players = client.players().expect("Get server player information");
-    let rules = client.rules().expect("Get server rules");
+    let info = server.info().expect("Get general server information");
+    let players = server.players().expect("Get server player information");
+    let rules = server.rules().expect("Get server rules");
 
     // Server Information
-    let server_name = server.name();
-    let loaded_map = server.map();
-    let max_players = server.player_max();
-    let players_online = server.player_count();
+    let server_name = info.name();
+    let loaded_map = info.map();
+    let max_players = info.player_max();
+    let players_online = info.player_count();
 
     println!("Server Name:     {}", &server_name);
     println!("Map Loaded:      {}", &loaded_map);
