@@ -12,3 +12,10 @@ homepage = "https://github.com/AceofSpades5757/valve-server-query"
 repository = "https://github.com/AceofSpades5757/valve-server-query"
 
 [dependencies]
+log = "0.4.17"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+simple_logger = "2.3.0"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+console_log = { version = "0.2.0", features = ["color"] }
