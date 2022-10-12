@@ -65,23 +65,23 @@ pub mod types {
     where
         I: Iterator<Item = &'a u8>,
     {
-        bytes.next().unwrap().to_owned()
+        bytes.next().expect("the next byte exists").to_owned()
     }
     pub fn get_short<'a, I>(bytes: &mut I) -> Short
     where
         I: Iterator<Item = &'a u8>,
     {
-        Short::from_le_bytes([*bytes.next().unwrap(), *bytes.next().unwrap()])
+        Short::from_le_bytes([*bytes.next().expect("next byte exists"), *bytes.next().expect("next byte exists")])
     }
     pub fn get_long<'a, I>(bytes: &mut I) -> Long
     where
         I: Iterator<Item = &'a u8>,
     {
         Long::from_le_bytes([
-            *bytes.next().unwrap(),
-            *bytes.next().unwrap(),
-            *bytes.next().unwrap(),
-            *bytes.next().unwrap(),
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
         ])
     }
     pub fn get_float<'a, I>(bytes: &mut I) -> Float
@@ -89,10 +89,10 @@ pub mod types {
         I: Iterator<Item = &'a u8>,
     {
         Float::from_le_bytes([
-            *bytes.next().unwrap(),
-            *bytes.next().unwrap(),
-            *bytes.next().unwrap(),
-            *bytes.next().unwrap(),
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
         ])
     }
     pub fn get_longlong<'a, I>(bytes: &mut I) -> LongLong
@@ -100,14 +100,14 @@ pub mod types {
         I: Iterator<Item = &'a u8>,
     {
         LongLong::from_le_bytes([
-            *bytes.next().unwrap(),
-            *bytes.next().unwrap(),
-            *bytes.next().unwrap(),
-            *bytes.next().unwrap(),
-            *bytes.next().unwrap(),
-            *bytes.next().unwrap(),
-            *bytes.next().unwrap(),
-            *bytes.next().unwrap(),
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
         ])
     }
     pub fn get_string<'a, I>(bytes: &mut I) -> String
@@ -116,7 +116,7 @@ pub mod types {
     {
         let mut string = String::new();
         loop {
-            let byte = bytes.next().unwrap();
+            let byte = bytes.next().expect("next byte exists");
             if *byte == 0 {
                 break;
             } else {
@@ -315,14 +315,14 @@ pub mod models {
                 }
 
                 let port: Option<Short>;
-                if extra_data_flag != None && (extra_data_flag.unwrap() & 0x80) != 0 {
+                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x80) != 0 {
                     port = Some(get_short(&mut it));
                 } else {
                     port = None;
                 }
 
                 let steam_id: Option<LongLong>;
-                if extra_data_flag != None && (extra_data_flag.unwrap() & 0x10) != 0 {
+                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x10) != 0 {
                     steam_id = Some(get_longlong(&mut it));
                 } else {
                     steam_id = None;
@@ -330,7 +330,7 @@ pub mod models {
 
                 let spectator_port: Option<Short>;
                 let spectator_name: Option<String>;
-                if extra_data_flag != None && (extra_data_flag.unwrap() & 0x40) != 0 {
+                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x40) != 0 {
                     spectator_port = Some(get_short(&mut it));
                     spectator_name = Some(get_string(&mut it));
                 } else {
@@ -339,14 +339,14 @@ pub mod models {
                 }
 
                 let keywords: Option<String>;
-                if extra_data_flag != None && (extra_data_flag.unwrap() & 0x20) != 0 {
+                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x20) != 0 {
                     keywords = Some(get_string(&mut it));
                 } else {
                     keywords = None;
                 }
 
                 let game_id: Option<LongLong>;
-                if extra_data_flag != None && (extra_data_flag.unwrap() & 0x01) != 0 {
+                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x01) != 0 {
                     game_id = Some(get_longlong(&mut it));
                 } else {
                     game_id = None;
@@ -359,7 +359,7 @@ pub mod models {
                     compress_trailing_null_bytes(&mut min_bytes);
 
                     // Just a [0]
-                    if min_bytes.len() == 1 && *min_bytes.last().unwrap() == 0 {
+                    if min_bytes.len() == 1 && *min_bytes.last().expect("last byte exists") == 0 {
                         None
                     } else {
                         Some(min_bytes.into_iter().collect::<Vec<u8>>())
@@ -648,11 +648,9 @@ pub mod server {
 
             // Socket Settings
             socket
-                .set_read_timeout(Some(Duration::from_secs(1)))
-                .expect("set read timeout");
+                .set_read_timeout(Some(Duration::from_secs(1)))?;
             socket
-                .set_write_timeout(Some(Duration::from_secs(1)))
-                .expect("set write timeout");
+                .set_write_timeout(Some(Duration::from_secs(1)))?;
 
             // Return Successfully
             Ok(Self { addr, socket })
@@ -1042,14 +1040,14 @@ pub mod utils {
             return;
         }
         // No trailing null bytes
-        if bytes.last().unwrap() != &0 {
+        if bytes.last().expect("a last byte exists") != &0 {
             return;
         }
 
         // Remove trailing null bytes, then add one null byte
-        let mut last = bytes.pop().unwrap();
+        let mut last = bytes.pop().expect("the next byte exists");
         while last == 0 && bytes.len() > 0 {
-            last = bytes.pop().unwrap();
+            last = bytes.pop().expect("the next byte exists");
         }
         bytes.push(last);
         bytes.push(0x00);
