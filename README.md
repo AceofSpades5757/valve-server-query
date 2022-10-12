@@ -4,9 +4,9 @@
 
 Crate allowing access to Valve's _Server Query_ protocol.
 
-- :rocket: Blazingly Fast
-- :lock: Type Safe
-- :zap: Efficient
+- 🚀 Blazingly Fast
+- 🔒 Type Safe
+- ⚡ Efficient
 
 Want to use it from Python? You can do that!
 Want to us it from JavaScript? You can do that too!
