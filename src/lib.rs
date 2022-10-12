@@ -612,6 +612,7 @@ pub mod server {
     /// let players = server.players().expect("Get server player information");
     /// let rules = server.rules().expect("Get server rules");
     /// ```
+    #[derive(Debug)]
     pub struct Server {
         socket: UdpSocket,
         addr: SocketAddr,
