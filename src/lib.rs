@@ -592,6 +592,7 @@ pub mod server {
     use std::error::Error;
     use std::io;
     use std::net::{IpAddr, Ipv4Addr, SocketAddr, UdpSocket};
+    use std::time::Duration;
 
     use crate::models::info::Info;
     use crate::models::Player;
@@ -645,8 +646,28 @@ pub mod server {
                 }
             }
 
+            // Socket Settings
+            socket
+                .set_read_timeout(Some(Duration::from_secs(1)))
+                .expect("set read timeout");
+            socket
+                .set_write_timeout(Some(Duration::from_secs(1)))
+                .expect("set write timeout");
+
             // Return Successfully
             Ok(Self { addr, socket })
+        }
+    }
+
+    /// Socket Settings
+    impl Server {
+        pub fn set_read_timeout(&mut self, duration: Option<Duration>) -> Result<(), Box<dyn Error>> {
+            self.socket.set_read_timeout(duration)?;
+            Ok(())
+        }
+        pub fn set_write_timeout(&mut self, duration: Option<Duration>) -> Result<(), Box<dyn Error>> {
+            self.socket.set_write_timeout(duration)?;
+            Ok(())
         }
     }
 
