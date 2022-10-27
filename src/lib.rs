@@ -20,6 +20,7 @@ pub use models::info::Vac;
 pub use models::info::Visibility;
 pub use models::Player;
 pub use server::Server;
+pub use server::Rules;
 
 const ENCODING: &str = "utf-8";
 const PACKET_SIZE: usize = 1400;
@@ -219,7 +220,7 @@ pub mod models {
         /// let max_players = info.player_max();
         /// let players_online = info.player_count();
         /// ```
-        #[derive(Debug)]
+        #[derive(Debug, PartialEq)]
         pub struct Info {
             /// Response header. Always equal to 'I' (0x49).
             header: Byte,
@@ -599,7 +600,7 @@ pub mod server {
     use crate::types::Byte;
     use crate::utils::get_multipacket_data;
 
-    type Rules = HashMap<String, String>;
+    pub type Rules = HashMap<String, String>;
 
     /// Represents a game server running a Steam game.
     ///
