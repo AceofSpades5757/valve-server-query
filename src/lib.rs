@@ -132,7 +132,7 @@ pub mod models {
 
     use crate::types::{get_byte, get_float, get_long, get_string, Byte, Float, Long};
 
-    #[derive(Debug, PartialEq)]
+    #[derive(Debug, PartialEq, Clone)]
     pub struct Player {
         index: Byte,
         name: String,
@@ -220,7 +220,7 @@ pub mod models {
         /// let max_players = info.player_max();
         /// let players_online = info.player_count();
         /// ```
-        #[derive(Debug, PartialEq)]
+        #[derive(Debug, PartialEq, Clone)]
         pub struct Info {
             /// Response header. Always equal to 'I' (0x49).
             header: Byte,
@@ -485,7 +485,7 @@ pub mod models {
             }
         }
 
-        #[derive(Debug, Eq, PartialEq)]
+        #[derive(Debug, Eq, PartialEq, Clone)]
         pub enum ServerType {
             Dedicated,
             NonDedicated,
@@ -505,7 +505,7 @@ pub mod models {
             }
         }
 
-        #[derive(Debug, Eq, PartialEq)]
+        #[derive(Debug, Eq, PartialEq, Clone)]
         pub enum Platform {
             Linux,
             Windows,
@@ -526,7 +526,7 @@ pub mod models {
             }
         }
 
-        #[derive(Debug, Eq, PartialEq)]
+        #[derive(Debug, Eq, PartialEq, Clone)]
         pub enum Visibility {
             Public,
             Private,
@@ -544,7 +544,7 @@ pub mod models {
             }
         }
 
-        #[derive(Debug, Eq, PartialEq)]
+        #[derive(Debug, Eq, PartialEq, Clone)]
         /// Specifies if a server uses VAC.
         pub enum Vac {
             Unsecured,
