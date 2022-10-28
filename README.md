@@ -23,7 +23,11 @@ In your `Cargo.toml` file.
 valve-server-query = "0.4"
 ```
 
-You can use `cargo add valve-server-query` also.
+Or, using the `cargo add` subcommand.
+
+```sh
+cargo add valve-server-query
+```
 
 # Usage
 
