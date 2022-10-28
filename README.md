@@ -1,4 +1,5 @@
-# Valve Server Query
+[![crates.io](https://img.shields.io/crates/v/valve-server-query?style=plastic)](https://crates.io/crates/valve-server-query)
+[![Documentation](https://img.shields.io/badge/docs-passing-green?style=platic)](https://docs.rs/valve-server-query/0.4.5/valve_server_query/)
 
 # Description
 
