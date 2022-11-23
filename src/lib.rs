@@ -631,7 +631,7 @@ pub mod server {
                 if let Err(e) = result {
                     return Err(Box::new(e));
                 } else {
-                    panic!("Unreachable");
+                    unreachable!();
                 }
             }
 
@@ -643,7 +643,7 @@ pub mod server {
                 if let Err(e) = result {
                     return Err(Box::new(e));
                 } else {
-                    panic!("Unreachable");
+                    unreachable!();
                 }
             }
 
