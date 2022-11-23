@@ -19,8 +19,8 @@ pub use models::info::ServerType;
 pub use models::info::Vac;
 pub use models::info::Visibility;
 pub use models::Player;
-pub use server::Server;
 pub use server::Rules;
+pub use server::Server;
 
 const ENCODING: &str = "utf-8";
 const PACKET_SIZE: usize = 1400;
@@ -72,7 +72,10 @@ pub mod types {
     where
         I: Iterator<Item = &'a u8>,
     {
-        Short::from_le_bytes([*bytes.next().expect("next byte exists"), *bytes.next().expect("next byte exists")])
+        Short::from_le_bytes([
+            *bytes.next().expect("next byte exists"),
+            *bytes.next().expect("next byte exists"),
+        ])
     }
     pub fn get_long<'a, I>(bytes: &mut I) -> Long
     where
@@ -316,14 +319,16 @@ pub mod models {
                 }
 
                 let port: Option<Short>;
-                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x80) != 0 {
+                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x80) != 0
+                {
                     port = Some(get_short(&mut it));
                 } else {
                     port = None;
                 }
 
                 let steam_id: Option<LongLong>;
-                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x10) != 0 {
+                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x10) != 0
+                {
                     steam_id = Some(get_longlong(&mut it));
                 } else {
                     steam_id = None;
@@ -331,7 +336,8 @@ pub mod models {
 
                 let spectator_port: Option<Short>;
                 let spectator_name: Option<String>;
-                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x40) != 0 {
+                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x40) != 0
+                {
                     spectator_port = Some(get_short(&mut it));
                     spectator_name = Some(get_string(&mut it));
                 } else {
@@ -340,14 +346,16 @@ pub mod models {
                 }
 
                 let keywords: Option<String>;
-                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x20) != 0 {
+                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x20) != 0
+                {
                     keywords = Some(get_string(&mut it));
                 } else {
                     keywords = None;
                 }
 
                 let game_id: Option<LongLong>;
-                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x01) != 0 {
+                if extra_data_flag.is_some() && (extra_data_flag.expect("data exists") & 0x01) != 0
+                {
                     game_id = Some(get_longlong(&mut it));
                 } else {
                     game_id = None;
@@ -648,10 +656,8 @@ pub mod server {
             }
 
             // Socket Settings
-            socket
-                .set_read_timeout(Some(Duration::from_secs(1)))?;
-            socket
-                .set_write_timeout(Some(Duration::from_secs(1)))?;
+            socket.set_read_timeout(Some(Duration::from_secs(1)))?;
+            socket.set_write_timeout(Some(Duration::from_secs(1)))?;
 
             // Return Successfully
             Ok(Self { addr, socket })
@@ -660,11 +666,17 @@ pub mod server {
 
     /// Socket Settings
     impl Server {
-        pub fn set_read_timeout(&mut self, duration: Option<Duration>) -> Result<(), Box<dyn Error>> {
+        pub fn set_read_timeout(
+            &mut self,
+            duration: Option<Duration>,
+        ) -> Result<(), Box<dyn Error>> {
             self.socket.set_read_timeout(duration)?;
             Ok(())
         }
-        pub fn set_write_timeout(&mut self, duration: Option<Duration>) -> Result<(), Box<dyn Error>> {
+        pub fn set_write_timeout(
+            &mut self,
+            duration: Option<Duration>,
+        ) -> Result<(), Box<dyn Error>> {
             self.socket.set_write_timeout(duration)?;
             Ok(())
         }
