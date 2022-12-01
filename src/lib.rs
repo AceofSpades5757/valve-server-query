@@ -1,4 +1,3 @@
-#![allow(dead_code)]
 //! Access Valve's Server Query using this package.
 //!
 //! # Game Server Info
@@ -22,6 +21,7 @@ pub use models::Player;
 pub use server::Rules;
 pub use server::Server;
 
+#[allow(dead_code)]
 const ENCODING: &str = "utf-8";
 const PACKET_SIZE: usize = 1400;
 /// Packet is not split.
@@ -59,8 +59,6 @@ pub mod types {
         // Null-Terminated
         String(CString),
     }
-
-    type ByteVec = Vec<u8>;
 
     pub fn get_byte<'a, I>(bytes: &mut I) -> Byte
     where

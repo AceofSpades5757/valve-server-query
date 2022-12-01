@@ -41,6 +41,10 @@ let players = server.players().expect("Get server player information");
 let rules = server.rules().expect("Get server rules");
 ```
 
+## WebAssembly (Wasm)
+
+This will panic in a Wasm environment (`target = "wasm32"`) due to UDP sockets not being supported.
+
 # Contributing
 
 Pull requests are welcome.

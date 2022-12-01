@@ -1,6 +1,6 @@
 [package]
 name = "valve-server-query"
-version = "0.4.6"
+version = "0.4.7"
 edition = "2021"
 authors = ["Kyle L. Davis <aceofspades5757.github@gmail.com>"]
 description = "This package allows you to access the data provided by Valve's Server Query protocol."
@@ -16,6 +16,3 @@ log = "0.4.17"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 simple_logger = "2.3.0"
-
-[target.'cfg(target_arch = "wasm32")'.dependencies]
-console_log = { version = "0.2.0", features = ["color"] }
