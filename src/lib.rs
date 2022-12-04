@@ -152,6 +152,19 @@ pub mod models {
         }
     }
 
+    /// Getters (Immutable)
+    impl Player {
+        pub fn name(&self) -> &str {
+            &self.name
+        }
+        pub fn score(&self) -> Long {
+            self.score
+        }
+        pub fn duration(&self) -> Float {
+            self.duration
+        }
+    }
+
     impl Player {
         pub fn get_players(bytes: &[u8]) -> Vec<Self> {
             let mut it = bytes.iter();
