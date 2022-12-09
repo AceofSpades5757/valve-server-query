@@ -845,9 +845,14 @@ pub mod server {
             }
 
             let _header: &Byte = &payload[0];
-            let _player_count: Byte = buffer[1].clone();
+            let player_count: Byte = payload[1].clone();
 
-            let players: Vec<Player> = Player::get_players(&buffer[2..bytes_returned + 1]);
+            let mut it = payload[2..].iter();
+            let mut players: Vec<Player> = Vec::new();
+            for _ in 0..player_count {
+                let player = Player::from_iter_bytes(&mut it);
+                players.push(player);
+            }
 
             Ok(players)
         }
