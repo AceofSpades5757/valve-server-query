@@ -1,6 +1,6 @@
 [package]
 name = "valve-server-query"
-version = "0.4.8"
+version = "0.4.9"
 edition = "2021"
 authors = ["Kyle L. Davis <aceofspades5757.github@gmail.com>"]
 description = "This package allows you to access the data provided by Valve's Server Query protocol."
